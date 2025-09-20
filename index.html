@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 星际挖矿指挥官 - 游戏入口</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 科幻背景星空动画 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 2px at 110px 80px, rgba(255,255,255,0.6), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes sparkle {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
+        }
+
+        .main-container {
+            text-align: center;
+            color: #00ffff;
+            max-width: 600px;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 50, 100, 0.6));
+            border: 3px solid #00ffff;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+        }
+
+        .game-title {
+            font-size: 48px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #00ffff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #0080ff; }
+        }
+
+        .description {
+            font-size: 18px;
+            margin-bottom: 40px;
+            color: #80d4ff;
+            text-shadow: 0 0 10px #80d4ff;
+            line-height: 1.6;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #00ffff, #0080ff);
+            color: #000033;
+            border: 2px solid #00ffff;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .play-button:hover {
+            background: linear-gradient(135deg, #00cccc, #0066cc);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+        }
+
+        .info-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 50, 100, 0.3);
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+        }
+
+        .feature-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            margin: 10px 0;
+            color: #80d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1 class="game-title">🚀 星际挖矿指挥官 ⚡</h1>
+
+        <p class="description">
+            欢迎来到未来的星际挖矿世界！<br>
+            操控先进的机器人挖掘外星宝藏，体验科幻冒险！
+        </p>
+
+        <a href="mining_game_scifi.html" class="play-button">🎮 开始游戏</a>
+
+        <div class="info-section">
+            <h3 style="color: #00ffff; margin-bottom: 15px;">🌟 游戏特色</h3>
+            <ul class="feature-list">
+                <li>🤖 科幻机器人角色</li>
+                <li>⚡ 激光束采矿系统</li>
+                <li>🔊 完整音效体验</li>
+                <li>💎 多种稀有宝物</li>
+                <li>🎯 等级进阶系统</li>
+                <li>🌌 霓虹发光界面</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 14px; color: #666;">
+            <p>支持现代浏览器 | 响应式设计 | 免费游玩</p>
+        </div>
+    </div>
+</body>
+</html>
