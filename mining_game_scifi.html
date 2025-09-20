@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 星际挖矿指挥官</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 科幻背景星空动画 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 2px at 110px 80px, rgba(255,255,255,0.6), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes sparkle {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
+        }
+
+        .game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            overflow: hidden;
+            background: linear-gradient(to bottom,
+                #0a0a1f 0%,
+                #1a1a3e 30%,
+                #2d2d5f 30%,
+                #3a3a7a 100%);
+            box-shadow:
+                0 0 20px #00ffff,
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+
+        .ui-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 50, 100, 0.6));
+            color: #00ffff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            font-family: 'Courier New', monospace;
+        }
+
+        .ui-panel div {
+            margin: 5px 0;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .audio-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 50, 100, 0.6));
+            color: #00ffff;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            font-family: 'Courier New', monospace;
+        }
+
+        .audio-button {
+            background: linear-gradient(135deg, #00ffff, #0080ff);
+            color: #000033;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 2px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        .audio-button:hover {
+            background: linear-gradient(135deg, #00cccc, #0066cc);
+        }
+
+        .audio-button.muted {
+            background: linear-gradient(135deg, #666666, #333333);
+            color: #999999;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ffff;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 50, 100, 0.6));
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 50, 100, 0.8));
+            color: #00ffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-radius: 15px;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #00ffff, #0080ff);
+            color: #000033;
+            border: 2px solid #00ffff;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .start-button:hover {
+            background: linear-gradient(135deg, #00cccc, #0066cc);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+        }
+
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 50, 100, 0.8));
+            color: #00ffff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 200;
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+            font-family: 'Courier New', monospace;
+        }
+
+        .game-title {
+            font-size: 42px;
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ffff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #0080ff; }
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #80d4ff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #80d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div class="ui-panel">
+            <div>🔋 能量: <span id="score">0</span></div>
+            <div>🎯 目标: <span id="target">1000</span></div>
+            <div>⏱️ 时间: <span id="time">60</span>s</div>
+            <div>🌟 等级: <span id="level">1</span></div>
+        </div>
+
+        <div class="audio-controls">
+            <div style="margin-bottom: 5px; font-size: 14px; text-align: center;">🔊 音效控制</div>
+            <button class="audio-button" id="musicToggle" onclick="toggleMusic()">🎵 音乐</button>
+            <button class="audio-button" id="sfxToggle" onclick="toggleSFX()">🔊 音效</button>
+        </div>
+
+        <div class="controls">
+            点击屏幕发射采矿激光束！<br>
+            🎯 绿色指示器亮起时点击发射 | 📍 黄色箭头显示激光摆动方向<br>
+            ⚡ 虚线显示激光摆动范围 | 🎯 瞄准时机很重要！
+        </div>
+
+        <div class="start-screen" id="startScreen">
+            <h1 class="game-title">🚀 星际挖矿指挥官 ⚡</h1>
+            <p class="subtitle">
+                使用先进的采矿激光挖掘外星宝藏！<br>
+                能量晶体价值最高，稀有矿物更珍贵<br>
+                小心爆炸装置和废料！
+            </p>
+            <button class="start-button" onclick="startGame()">启动任务</button>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <h2 style="color: #00ffff; margin-bottom: 20px; text-shadow: 0 0 15px #00ffff;">任务完成！</h2>
+            <p>最终能量: <span id="finalScore">0</span></p>
+            <p>达到等级: <span id="finalLevel">1</span></p>
+            <button class="start-button" onclick="restartGame()" style="margin-top: 15px;">重新任务</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 游戏状态
+        let gameState = 'start'; // start, playing, paused, gameOver
+        let score = 0;
+        let level = 1;
+        let timeLeft = 60;
+        let target = 1000;
+
+        // 音频设置
+        let audioEnabled = {
+            music: true,
+            sfx: true
+        };
+
+        // 音频对象
+        let audioContext;
+        let sounds = {};
+
+        // 初始化音频系统
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                // 创建科幻音效
+                sounds = {
+                    shoot: createBeepSound(800, 0.1, 'square'),
+                    collect: createBeepSound(1200, 0.2, 'triangle'),
+                    explosion: createNoiseSound(0.3),
+                    levelUp: createMelodySound([800, 1000, 1200], 0.5),
+                    background: createBackgroundMusic()
+                };
+            } catch (e) {
+                console.warn('音频初始化失败:', e);
+                audioEnabled.music = false;
+                audioEnabled.sfx = false;
+            }
+        }
+
+        // 创建蜂鸣音效
+        function createBeepSound(frequency, duration, waveType = 'sine') {
+            return () => {
+                if (!audioEnabled.sfx || !audioContext) return;
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                oscillator.type = waveType;
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            };
+        }
+
+        // 创建噪音效果（爆炸音）
+        function createNoiseSound(duration) {
+            return () => {
+                if (!audioEnabled.sfx || !audioContext) return;
+
+                const bufferSize = audioContext.sampleRate * duration;
+                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const output = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const source = audioContext.createBufferSource();
+                const gainNode = audioContext.createGain();
+
+                source.buffer = buffer;
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                source.start(audioContext.currentTime);
+            };
+        }
+
+        // 创建旋律音效
+        function createMelodySound(frequencies, totalDuration) {
+            return () => {
+                if (!audioEnabled.sfx || !audioContext) return;
+
+                const noteDuration = totalDuration / frequencies.length;
+
+                frequencies.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'triangle';
+
+                    const startTime = audioContext.currentTime + index * noteDuration;
+                    gainNode.gain.setValueAtTime(0.2, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + noteDuration);
+
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + noteDuration);
+                });
+            };
+        }
+
+        // 创建背景音乐
+        function createBackgroundMusic() {
+            let backgroundOscillator = null;
+            let backgroundGain = null;
+            let isPlaying = false;
+
+            return {
+                start: () => {
+                    if (!audioEnabled.music || !audioContext || isPlaying) return;
+
+                    backgroundOscillator = audioContext.createOscillator();
+                    backgroundGain = audioContext.createGain();
+
+                    backgroundOscillator.connect(backgroundGain);
+                    backgroundGain.connect(audioContext.destination);
+
+                    backgroundOscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+                    backgroundOscillator.type = 'sawtooth';
+
+                    backgroundGain.gain.setValueAtTime(0.05, audioContext.currentTime);
+
+                    // 创建低频振荡效果
+                    const lfo = audioContext.createOscillator();
+                    const lfoGain = audioContext.createGain();
+
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(backgroundOscillator.frequency);
+
+                    lfo.frequency.setValueAtTime(0.5, audioContext.currentTime);
+                    lfoGain.gain.setValueAtTime(10, audioContext.currentTime);
+
+                    backgroundOscillator.start();
+                    lfo.start();
+
+                    isPlaying = true;
+                },
+                stop: () => {
+                    if (backgroundOscillator && isPlaying) {
+                        backgroundOscillator.stop();
+                        backgroundOscillator = null;
+                        backgroundGain = null;
+                        isPlaying = false;
+                    }
+                }
+            };
+        }
+
+        // 播放音效
+        function playSound(soundName) {
+            if (sounds[soundName] && typeof sounds[soundName] === 'function') {
+                sounds[soundName]();
+            } else if (sounds[soundName] && sounds[soundName].start) {
+                sounds[soundName].start();
+            }
+        }
+
+        // 停止音效
+        function stopSound(soundName) {
+            if (sounds[soundName] && sounds[soundName].stop) {
+                sounds[soundName].stop();
+            }
+        }
+
+        // 切换音乐
+        function toggleMusic() {
+            audioEnabled.music = !audioEnabled.music;
+            const button = document.getElementById('musicToggle');
+
+            if (audioEnabled.music) {
+                button.classList.remove('muted');
+                button.textContent = '🎵 音乐';
+                if (gameState === 'playing') {
+                    playSound('background');
+                }
+            } else {
+                button.classList.add('muted');
+                button.textContent = '🔇 音乐';
+                stopSound('background');
+            }
+        }
+
+        // 切换音效
+        function toggleSFX() {
+            audioEnabled.sfx = !audioEnabled.sfx;
+            const button = document.getElementById('sfxToggle');
+
+            if (audioEnabled.sfx) {
+                button.classList.remove('muted');
+                button.textContent = '🔊 音效';
+            } else {
+                button.classList.add('muted');
+                button.textContent = '🔇 音效';
+            }
+        }
+
+        // 科幻矿工机器人
+        let miner = {
+            x: 400,
+            y: 100,
+            width: 60,
+            height: 80
+        };
+
+        let hook = {
+            x: 400,
+            y: 180,
+            length: 50,
+            angle: 0,
+            speed: 0.027, // 减少10%：0.03 * 0.9 = 0.027
+            state: 'swinging', // swinging, extending, retracting, pulling
+            maxLength: 450,
+            extendSpeed: 5,
+            retractSpeed: 3,
+            caughtItem: null
+        };
+
+        // 宝物数组
+        let treasures = [];
+
+        // 科幻宝物类型定义
+        const treasureTypes = {
+            energy_small: { value: 50, weight: 1, color: '#00ff00', size: 20, symbol: '◆' },
+            energy_medium: { value: 100, weight: 2, color: '#00ff88', size: 30, symbol: '◆' },
+            energy_large: { value: 200, weight: 4, color: '#00ffff', size: 40, symbol: '◆' },
+            crystal: { value: 500, weight: 3, color: '#ff00ff', size: 25, symbol: '💎' },
+            debris: { value: 10, weight: 5, color: '#666666', size: 35, symbol: '■' },
+            explosive: { value: -100, weight: 1, color: '#ff0000', size: 25, symbol: '💥' }
+        };
+
+        // 初始化宝物
+        function initTreasures() {
+            treasures = [];
+            const types = Object.keys(treasureTypes);
+
+            for (let i = 0; i < 15; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const treasure = {
+                    type: type,
+                    x: Math.random() * 700 + 50,
+                    y: Math.random() * 350 + 250,
+                    ...treasureTypes[type],
+                    collected: false
+                };
+                treasures.push(treasure);
+            }
+        }
+
+        // 绘制科幻矿工机器人
+        function drawMiner() {
+            // 机器人主体
+            ctx.fillStyle = '#333366';
+            ctx.fillRect(miner.x - miner.width/2, miner.y - miner.height, miner.width, miner.height);
+
+            // 机器人边框发光效果
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(miner.x - miner.width/2, miner.y - miner.height, miner.width, miner.height);
+
+            // 机器人头部
+            ctx.fillStyle = '#404080';
+            ctx.fillRect(miner.x - 25, miner.y - miner.height - 15, 50, 20);
+
+            // 头部发光边框
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(miner.x - 25, miner.y - miner.height - 15, 50, 20);
+
+            // 眼睛LED灯
+            ctx.fillStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.arc(miner.x - 10, miner.y - miner.height - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(miner.x + 10, miner.y - miner.height - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 天线
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(miner.x, miner.y - miner.height - 15);
+            ctx.lineTo(miner.x, miner.y - miner.height - 25);
+            ctx.stroke();
+
+            // 天线顶端闪烁灯
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(miner.x, miner.y - miner.height - 25, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 绘制科幻激光束
+        function drawHook() {
+            const hookX = miner.x + Math.sin(hook.angle) * hook.length;
+            const hookY = miner.y + Math.cos(hook.angle) * hook.length;
+
+            // 绘制激光摆动范围指示器（只在摆动状态时显示）
+            if (hook.state === 'swinging') {
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 8]);
+
+                // 左边界
+                const leftX = miner.x + Math.sin(-Math.PI/3) * 80;
+                const leftY = miner.y + Math.cos(-Math.PI/3) * 80;
+                ctx.beginPath();
+                ctx.moveTo(miner.x, miner.y);
+                ctx.lineTo(leftX, leftY);
+                ctx.stroke();
+
+                // 右边界
+                const rightX = miner.x + Math.sin(Math.PI/3) * 80;
+                const rightY = miner.y + Math.cos(Math.PI/3) * 80;
+                ctx.beginPath();
+                ctx.moveTo(miner.x, miner.y);
+                ctx.lineTo(rightX, rightY);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+            }
+
+            // 激光束主体（发光效果）
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 10;
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(miner.x, miner.y);
+            ctx.lineTo(hookX, hookY);
+            ctx.stroke();
+
+            // 激光束内核
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(miner.x, miner.y);
+            ctx.lineTo(hookX, hookY);
+            ctx.stroke();
+
+            // 激光束末端采矿装置
+            ctx.shadowColor = '#ff0080';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#00ccff';
+            ctx.beginPath();
+            ctx.arc(hookX, hookY, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 采矿装置边框
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(hookX, hookY, 15, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 采矿装置内部
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(hookX, hookY, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 状态指示器
+            if (hook.state === 'swinging') {
+                ctx.shadowColor = '#00ff00';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#00ff00';
+                ctx.beginPath();
+                ctx.arc(hookX, hookY - 30, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 摆动方向全息箭头
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffff00';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                const direction = hook.speed > 0 ? '→' : '←';
+                ctx.fillText(direction, hookX, hookY - 40);
+            }
+
+            // 重置阴影
+            ctx.shadowBlur = 0;
+
+            // 更新钩爪位置
+            hook.x = hookX;
+            hook.y = hookY;
+        }
+
+        // 绘制科幻宝物
+        function drawTreasures() {
+            treasures.forEach(treasure => {
+                if (!treasure.collected) {
+                    // 为宝物添加发光效果
+                    ctx.shadowColor = treasure.color;
+                    ctx.shadowBlur = 8;
+                    ctx.fillStyle = treasure.color;
+                    ctx.font = `${treasure.size}px Arial`;
+                    ctx.textAlign = 'center';
+
+                    if (treasure.symbol === '💥') {
+                        ctx.fillText(treasure.symbol, treasure.x, treasure.y);
+                    } else if (treasure.symbol === '💎') {
+                        ctx.fillText(treasure.symbol, treasure.x, treasure.y);
+                    } else if (treasure.symbol === '◆') {
+                        // 能量晶体特殊绘制
+                        ctx.beginPath();
+                        ctx.moveTo(treasure.x, treasure.y - treasure.size/2);
+                        ctx.lineTo(treasure.x + treasure.size/3, treasure.y);
+                        ctx.lineTo(treasure.x, treasure.y + treasure.size/2);
+                        ctx.lineTo(treasure.x - treasure.size/3, treasure.y);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else {
+                        // 废料方块
+                        ctx.fillRect(treasure.x - treasure.size/2, treasure.y - treasure.size/2,
+                                   treasure.size, treasure.size);
+                    }
+
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+
+        // 碰撞检测
+        function checkCollision(x1, y1, size1, x2, y2, size2) {
+            const distance = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+            return distance < (size1 + size2) / 2;
+        }
+
+        // 更新钩爪状态
+        function updateHook() {
+            if (hook.state === 'swinging') {
+                hook.angle += hook.speed;
+                if (hook.angle > Math.PI/3 || hook.angle < -Math.PI/3) {
+                    hook.speed = -hook.speed;
+                }
+            } else if (hook.state === 'extending') {
+                hook.length += hook.extendSpeed;
+
+                // 检查是否碰到宝物
+                treasures.forEach(treasure => {
+                    if (!treasure.collected && checkCollision(hook.x, hook.y, 20, treasure.x, treasure.y, treasure.size)) {
+                        hook.caughtItem = treasure;
+                        treasure.collected = true;
+                        hook.state = 'retracting';
+
+                        // 播放收集音效
+                        if (treasure.type === 'explosive') {
+                            playSound('explosion');
+                            score += treasure.value;
+                            updateScore();
+                        } else {
+                            playSound('collect');
+                        }
+                    }
+                });
+
+                // 检查是否到达最大长度或底部
+                if (hook.length >= hook.maxLength || hook.y >= canvas.height - 20) {
+                    hook.state = 'retracting';
+                }
+            } else if (hook.state === 'retracting') {
+                const retractSpeed = hook.caughtItem ?
+                    Math.max(1, hook.retractSpeed - hook.caughtItem.weight * 0.5) :
+                    hook.retractSpeed;
+
+                hook.length -= retractSpeed;
+
+                // 拖拽物品
+                if (hook.caughtItem) {
+                    hook.caughtItem.x = hook.x;
+                    hook.caughtItem.y = hook.y;
+                }
+
+                // 检查是否返回到矿工位置
+                if (hook.length <= 50) {
+                    if (hook.caughtItem) {
+                        score += hook.caughtItem.value;
+                        updateScore();
+                        hook.caughtItem = null;
+                    }
+
+                    hook.length = 50;
+                    hook.state = 'swinging';
+                    hook.angle = 0;
+                    hook.speed = 0.027; // 保持减少后的速度
+                }
+            }
+        }
+
+        // 更新分数显示
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+
+            // 检查是否达到目标
+            if (score >= target) {
+                levelUp();
+            }
+        }
+
+        // 升级
+        function levelUp() {
+            level++;
+            target += 1000;
+            timeLeft += 30;
+            document.getElementById('level').textContent = level;
+            document.getElementById('target').textContent = target;
+
+            // 播放升级音效
+            playSound('levelUp');
+
+            // 重新生成宝物
+            initTreasures();
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            if (gameState !== 'playing') return;
+
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制外星地表背景
+            const gradient = ctx.createLinearGradient(0, 200, 0, canvas.height);
+            gradient.addColorStop(0, '#4a4a8a');
+            gradient.addColorStop(1, '#2a2a5a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 200, canvas.width, canvas.height - 200);
+
+            // 绘制地表纹理线条
+            ctx.strokeStyle = '#6a6aaa';
+            ctx.lineWidth = 1;
+            for (let i = 220; i < canvas.height; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // 绘制游戏元素
+            drawTreasures();
+            drawMiner();
+            drawHook();
+
+            // 更新钩爪
+            updateHook();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 计时器
+        function startTimer() {
+            const timer = setInterval(() => {
+                if (gameState === 'playing') {
+                    timeLeft--;
+                    document.getElementById('time').textContent = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        endGame();
+                    }
+                } else {
+                    clearInterval(timer);
+                }
+            }, 1000);
+        }
+
+        // 开始游戏
+        function startGame() {
+            gameState = 'playing';
+            document.getElementById('startScreen').style.display = 'none';
+
+            // 初始化音频
+            if (!audioContext) {
+                initAudio();
+            }
+
+            // 启动背景音乐
+            if (audioEnabled.music) {
+                playSound('background');
+            }
+
+            initTreasures();
+            gameLoop();
+            startTimer();
+        }
+
+        // 结束游戏
+        function endGame() {
+            gameState = 'gameOver';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevel').textContent = level;
+            document.getElementById('gameOver').style.display = 'block';
+
+            // 停止背景音乐
+            stopSound('background');
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            gameState = 'start';
+            score = 0;
+            level = 1;
+            timeLeft = 60;
+            target = 1000;
+
+            // 停止背景音乐
+            stopSound('background');
+
+            // 重置UI
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('target').textContent = target;
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+
+            // 重置钩爪
+            hook.length = 50;
+            hook.angle = 0;
+            hook.state = 'swinging';
+            hook.speed = 0.027; // 保持减少后的速度
+            hook.caughtItem = null;
+        }
+
+        // 鼠标点击事件
+        canvas.addEventListener('click', (e) => {
+            if (gameState === 'playing' && hook.state === 'swinging') {
+                hook.state = 'extending';
+                // 播放发射音效
+                playSound('shoot');
+            }
+        });
+
+        // 初始化游戏
+        initTreasures();
+    </script>
+</body>
+</html>
